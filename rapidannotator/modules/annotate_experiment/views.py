@@ -216,3 +216,15 @@ def _toggleLooping():
     response['success'] = True
 
     return jsonify(response)
+
+
+''' Change the status of the experiment dynamically'''
+@blueprint.route('/checkStatus', methods=['POST'])
+def checkStatus():
+    experimentId = request.form.get('experimentId', None)
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    experiment.status = 'Completed'
+    db.session.commit()
+    response = {}
+    response['success'] = True
+    return jsonify(response)

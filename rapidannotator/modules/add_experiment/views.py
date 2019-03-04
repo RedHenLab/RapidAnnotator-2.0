@@ -586,6 +586,8 @@ def viewResults(experimentId):
 def _discardAnnotations():
 
     experimentId = request.args.get('experimentId', None)
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    experiment.status = 'In Progress'
     annotationLevels = AnnotationLevel.query.filter_by(experiment_id=experimentId).all()
 
     '''

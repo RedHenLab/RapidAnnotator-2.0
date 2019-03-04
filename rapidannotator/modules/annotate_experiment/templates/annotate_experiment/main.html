@@ -259,6 +259,15 @@
         }
 
         function displayEnd() {
+            var data = {
+                'experimentId' :  {{experiment.id}},
+            }
+            $.ajax({
+                url: "{{ url_for('annotate_experiment.checkStatus')}}",
+                type: 'POST',
+                data: data,
+            });
+
             $('.annotationArea').addClass('hidden-element');
             $('.thanksNote').removeClass('hidden-element');
             undoButton.addClass('hidden-element');
