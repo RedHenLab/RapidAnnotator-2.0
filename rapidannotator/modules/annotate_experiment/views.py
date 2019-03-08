@@ -223,7 +223,7 @@ def _toggleLooping():
 def checkStatus():
     experimentId = request.form.get('experimentId', None)
     experiment = Experiment.query.filter_by(id=experimentId).first()
-    experiment.status = 'Completed'
+    experiment.status =  'Completed'
     db.session.commit()
     response = {}
     response['success'] = True

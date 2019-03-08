@@ -45,7 +45,12 @@
                             <td>{{experiment.description}}</td>
                             <td>{{experiment.category}}</td>
                             <td>{{experiment.created_at | datetimeformat('%d-%m-%Y')}}</td>
-                            <td>{{experiment.status}}</td>
+                            {%- if (experiment.status == 'Completed') -%}
+                                <td style="color: green;"> {{experiment.status}}</td>
+                            {%- endif -%}
+                            {%- if (experiment.status == 'In Progress') -%}
+                                <td style="color: blue;"> {{experiment.status}}</td>
+                            {%- endif -%}
                         </tr>
                     {% endfor %}
 
@@ -71,12 +76,17 @@
                       {%- set experiment_url = url_for('annotate_experiment.index', experimentId = experiment.id) %}
 
                       <tr class='clickable-row'
-                          data-href="{{ experiment_url }}">
-                          <td>{{experiment.name}}</td>
-                          <td>{{experiment.description}}</td>
-                          <td>{{experiment.category}}</td>
-                          <td>{{experiment.created_at | datetimeformat('%d-%m-%Y')}}</td>
-                          <td>{{experiment.status}}</td>
+                            data-href="{{ experiment_url }}">
+                            <td>{{experiment.name}}</td>
+                            <td>{{experiment.description}}</td>
+                            <td>{{experiment.category}}</td>
+                            <td>{{experiment.created_at | datetimeformat('%d-%m-%Y')}}</td>
+                            {%- if (experiment.status == 'Completed') -%}
+                                <td style="color: green;"> {{experiment.status}}</td>
+                            {%- endif -%}
+                            {%- if (experiment.status == 'In Progress') -%}
+                                <td style="color: blue;"> {{experiment.status}}</td>
+                            {%- endif -%}
                       </tr>
                   {% endfor %}
 

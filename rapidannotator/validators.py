@@ -21,6 +21,6 @@ def validate_username(username):
     :param username: The user name.
     :raises ValueError: If validation fails.
     """
-    #pass
-    if not username_regex.match(username):
-        raise ValueError(USERNAME_RULES)
+    pass
+    # if not username_regex.match(username):
+        # raise ValueError(USERNAME_RULES)

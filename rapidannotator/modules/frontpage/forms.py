@@ -54,7 +54,7 @@ class RegistrationForm(FlaskForm):
 
     email = StringField(
         label=_('Email'),
-        validators=[DataRequired(message=_('Email not provided.')), Email()]
+        # validators=[DataRequired(message=_('Email not provided.')), Email()]
     )
 
     password = PasswordField(
