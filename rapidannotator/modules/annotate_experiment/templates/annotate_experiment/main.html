@@ -404,7 +404,7 @@
             if( "{{ experiment.uploadType }}" === "viaSpreadsheet" )
                 var url = fileToLoad.content;
             else
-                var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.name;
+                var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.content;
 
             if( "{{ experiment.category }}" === "image") {
                 loadedDiv.find('img').attr('src', url);
