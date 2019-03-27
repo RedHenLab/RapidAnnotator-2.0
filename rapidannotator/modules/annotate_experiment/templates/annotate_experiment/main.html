@@ -26,6 +26,10 @@
     </div>
 
     <div class="pull-right" style="display: inline-block">
+        <button type="button" class="doneButton btn btn-warning btn-group btn-group-inline btn-space">Done(No going back)</button>
+    </div>
+
+    <div class="pull-right" style="display: inline-block">
         {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
             <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
                 type="button" value={{current_user.looping}}>
@@ -130,6 +134,13 @@
     $(window).on('load', function() {
 
         var undoButton = $('.undoButton');
+        var doneButton = $('.doneButton');
+
+        if({{currentFileIndex}} <= {{lastFile}}) {
+            doneButton.addClass('hidden-element');
+        }
+        
+        
         if({{currentFileIndex}} > {{lastFile}}) {
             displayEnd();
             return;
@@ -167,6 +178,7 @@
         /* TODO! take care of same names */
 
         /*level indexing is 1 based*/
+        var pt = 0;
         var currentLevel = 1;
         var labelButton = $('.labelButton');
         var selectedLabel = -1;
@@ -235,6 +247,14 @@
         }
 
         function previousLevel() {
+            if(pt == 1)
+            {
+                $('.annotationArea').removeClass('hidden-element');
+                $('.thanksNote').addClass('hidden-element');
+                pt = 0;
+                doneButton.addClass('hidden-element');
+            }
+            else{
             if (currentLevel == 1) {
                 loadPreviousFile();
             } else {
@@ -245,12 +265,29 @@
                 currentLevelBody.removeClass('hidden-element');
             }
         }
+        }
 
         undoButton.on('click', function() {
             undoButton.attr("disabled", "disabled");
             undoAnnotation();
             window.setTimeout(function() {
                 undoButton.removeAttr("disabled");
+            }, [500]);
+        });
+
+        doneButton.on('click', function() {
+            doneButton.attr("disabled", "disabled");
+            displayEnd();
+                        currentFileIndex = -1;
+                        currentLevel = -1;
+                        if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                            if( "{{ experiment.uploadType }}" === "manual" ) {
+                            }
+                                var f = $(".file[data-index='" + currentLoadedFile + "']");
+                                f.find(".clip")[0].pause();
+                        }
+            window.setTimeout(function() {
+                doneButton.removeAttr("disabled");
             }, [500]);
         });
 
@@ -262,6 +299,19 @@
             $('.annotationArea').addClass('hidden-element');
             $('.thanksNote').removeClass('hidden-element');
             undoButton.addClass('hidden-element');
+            doneButton.addClass('hidden-element');
+        }
+
+        function displayDummyEnd() {
+            $('.annotationArea').addClass('hidden-element');
+            $('.thanksNote').removeClass('hidden-element');
+            if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                            if( "{{ experiment.uploadType }}" === "manual" ) {
+                            }
+                                var f = $(".file[data-index='" + currentLoadedFile + "']");
+                                f.find(".clip")[0].pause();
+                        }
+            // undoButton.addClass('hidden-element');
         }
 
         function loadPreviousFile() {
@@ -320,15 +370,16 @@
                 if(response.success) {
                     annotations = {};
                     if(currentFileIndex == {{lastFile}}) {
-                        displayEnd();
-                        currentFileIndex = -1;
-                        currentLevel = -1;
-                        if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                            if( "{{ experiment.uploadType }}" === "manual" ) {
-                            }
-                                var f = $(".file[data-index='" + currentLoadedFile + "']");
-                                f.find(".clip")[0].pause();
-                        }
+                        doneButton.removeClass('hidden-element');
+                        pt = 1;
+                        displayDummyEnd();
+                        // currentLevel = -1;
+                        // if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                        //     if( "{{ experiment.uploadType }}" === "manual" ) {
+                        //     }
+                        //         var f = $(".file[data-index='" + currentLoadedFile + "']");
+                        //         f.find(".clip")[0].pause();
+                        // }
                     } else {
                         if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
                             stopThisClip(currentLoadedFile);
@@ -404,7 +455,7 @@
             if( "{{ experiment.uploadType }}" === "viaSpreadsheet" )
                 var url = fileToLoad.content;
             else
-                var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.name;
+                var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.content;
 
             if( "{{ experiment.category }}" === "image") {
                 loadedDiv.find('img').attr('src', url);
