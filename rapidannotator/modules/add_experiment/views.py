@@ -1577,7 +1577,10 @@ def _exportResultsWide(experimentId, format):
             labels_map[label.id] = label.name
     
     files = File.query.filter_by(experiment_id = experimentId)\
-            .with_entities(File.id, File.name)\
+            .join(FileCaption, FileCaption.file_id == File.id)\
+            .with_entities(File.id, File.name, File.content,\
+            File.edge_link, File.concordance_lineNumber, File.display_order,\
+            FileCaption.caption, FileCaption.target_caption,)\
             .all()
     empty_col = len(files) * [0]
     df = pd.DataFrame(files)
@@ -1591,7 +1594,15 @@ def _exportResultsWide(experimentId, format):
     for a in annotations_info:
         col = f'{levels_map[a.annotationLevel_id]}({labels_map[a.label_id]}) {annotators_map[a.user_id]}'
         df.loc[a.file_id,[col]] = 1
+    df.rename(columns={'name': 'file_name'}, inplace=True)
     
+    if experiment.uploadType == 'fromConcordance':
+        experimentDIR = os.path.join(app.config['UPLOAD_FOLDER'], str(experiment.id))
+        inputConcordance = os.path.join(experimentDIR, 'concordance.csv')
+        data = pandas.read_csv(inputConcordance)
+        data.index += 1
+        df = pd.merge(df, data, how='inner', left_on=['concordance_lineNumber'], right_index=True)
+    df.drop('concordance_lineNumber', inplace=True, axis=1)
     filePath = make_file(df, experimentId, format)
     return send_file(filePath, as_attachment=True)
 

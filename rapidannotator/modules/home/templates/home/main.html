@@ -5,7 +5,25 @@
 {% block head %}
   {{ super() }}
   <style type="text/css">
+    select , input{
+        border: none;
+        padding: 0 0.5em 0.5em 0;
+        margin: 0 10px 10px 0;
+        width: 100%;
+        cursor: inherit;
+    }
     .important { color: #336699; }
+    .new-experiment a {
+        margin:5px;
+    }
+    #continueExperimentModal button , #continueExperimentModal input{
+        margin:5px;
+    }
+    .loadingIcon, .uploadedIcon, .errorMessages{
+        padding:10px;
+        margin:10px;
+        display: none;
+    }
   </style>
 {% endblock head %}
 
@@ -168,13 +186,15 @@
 </div>
 
 {%- if current_user.is_experimenter() -%}
-    <div class="container">
+    <div class="container new-experiment">
       <a data-toggle="modal" data-target="#experimentDetailsId" class="btn btn-primary pull-right">
           Add Experiment
       </a>
+      <a data-toggle="modal" data-target="#continueExperimentModal" class="btn btn-primary pull-right">
+          Continue Experiment
+      </a>
     </div>
 {%- endif -%}
-
 
 <!-- Add Experiment Modal -->
 <div class="modal fade" id="experimentDetailsId" role="dialog" tabindex="-1"
@@ -198,6 +218,63 @@
                 <div class="form-actions">
                     <button type="submit" name="submit" value="experimentDetails" class="btn btn-primary"> {{ ('Add Experiment') }}</button>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Continue Experiment Modal -->
+<div class="modal fade" id="continueExperimentModal" role="dialog" tabindex="-1"
+    aria-labelledby="continueExperimentModal" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Re-upload Experiment Details</h4>
+      </div>
+        <div class="modal-body">
+            <div class="errorMessages">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only"></span>
+                    <span class="error" id="errorText"></span>
+                </div>
+            </div>
+            <form enctype="multipart/form-data" method="post">
+                <label for="name">Enter new experiment name:</label>
+                <input name="continueExperimentName" id="continueExperimentName" value="" placeholder="Experiment Name">
+                
+                <label for="description">Enter new experiment description:</label>
+                <input name="continueExperimentDescription" id="continueExperimentDescription" value="" placeholder="Experiment Description">
+                
+                <label for="experiments">Choose the experiment being continued:</label>
+                <select name="experiments" id="experimentIdSelector">
+                {% for experiment in myExperiments %}
+                <option value={{experiment.id}}>{{experiment.name}}</option>
+                {% endfor %}
+                </select> 
+                
+                <div class="loadingIcon" align="center">
+                    <img src="{{url_for('static', filename = 'img/uploading.gif')}}" width=50 height=50>
+                </div>
+                
+                <label for="experiments">Select the results of the experiement to be continued (wide format):</label>
+                <div class="uploadedIcon" align="center">
+                    <img src="{{url_for('static', filename = 'img/uploadComplete.jpeg')}}" width=50 height=50>
+                </div>
+                <div>
+                    <input type="file" id="experimentResultsFile" class="btn btn-primary btn-group btn-group btn-group-inline btn-space">
+                    <button type="button" id="continueExperimentUpload" class="btn btn-primary btn-group btn-group-inline btn-space">
+                        <span class="glyphicon glyphicon-upload"></span>
+                        Start Upload
+                    </button>
+                <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Cancel</button>
                 </div>
             </form>
         </div>
@@ -267,6 +344,42 @@
                 }
             });
         })
+    });
+    
+    $("#continueExperimentUpload").on("click", function(){
+        filesHandler = document.getElementById("experimentResultsFile");
+        if (filesHandler.files.length == 0){
+            alert("You must select an experiment file (wide format)")
+            return;
+        }
+        let file = filesHandler.files[0];
+        let file_ext = file.name.split('.').pop();
+        if (file_ext != "xlsx" && file_ext != "xls" && file_ext != "csv"){
+            alert("You must select an experiment file (wide format) in .csv or .xlsx")
+            return;
+        }
+        let formData = new FormData();
+        formData.append("file", file);
+        formData.append("id", +$('#experimentIdSelector').val());
+        formData.append("name", $('#continueExperimentName').val());
+        formData.append("description", $('#continueExperimentDescription').val());
+        $(".loadingIcon").show();
+        fetch("{{ url_for('home._continueExperiment')}}", {method: "POST", body: formData})
+        .then(res=>res.json())
+        .then(res=>{
+            if (res.success){
+                $('#experimentResultsFile').val("");
+                location.reload();
+                $(".uploadedIcon").show();
+                setTimeout(function(){ $(".uploadedIcon").hide(1000) }, 5000);
+                $(".loadingIcon").hide();
+            }
+            else {
+                $(".loadingIcon").hide(2000);
+                $("#errorText").text(res.message)
+                $(".errorMessages").show();
+            }
+        });
     });
 </script>
 
