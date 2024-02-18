@@ -1092,6 +1092,7 @@
         function fileAnnotationCompleted() {
             var url = "{{ url_for('annotate_experiment._addAnnotationInfo')}}";
             var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
+            const comment = $("#commentsData").val();
             function* entries(obj) {
                 for (let key in obj)
                     yield [key, obj[key]];
@@ -1103,6 +1104,7 @@
                 'labelCount' :     {{labelCount}},
                 'userId'    : "{{userId}}",
                 'hasToIncreaseCurrent': 1,
+                'comment': comment,
                 'coordinates': currentFileCoordinates,
             };
 

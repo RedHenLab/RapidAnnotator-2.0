@@ -266,7 +266,11 @@
 	                <ul class="labelKeyBindings">
 	                    {% for label in level.labels %}
 	                    <li data-key="{{label.key_binding}}" data-labelid="{{label.id}}">
-	                        <p> {{keyBindingDict[levelIndex][label.id]}} : {{label.name}} <input data-labelid="{{label.id}}" hidden value="" class="label_other inputLevel-{{level.id}}"> </p>
+	                        <p> {{keyBindingDict[levelIndex][label.id]}} : {{label.name}} 
+                                {%- if experiment.advancedAnnotation -%}
+                                <input data-labelid="{{label.id}}" hidden value="" class="label_other inputLevel-{{level.id}}"> 
+                                {%- endif -%}
+                            </p>
 	                    </li>
 	                    {% endfor %}
 	                </ul>
@@ -300,6 +304,10 @@
             </form>
         {%- endif -%}
     </div><br>
+    <div class="fileComment">
+        <b>Comment:</b> <br><br>
+        <textarea rows = "3" cols = "100" id="commentData">{{comment}}</textarea>
+    </div>
 </div>
 
 <div class="content hidden-element" style="position: fixed; bottom: 0; background: rgba(0, 0, 0, 0.5); color: #f1f1f1; width: 100%; padding: 10px;">
@@ -787,6 +795,7 @@
 
             var url = "{{ url_for('annotate_experiment._addAnnotationInfo')}}";
             var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
+            const comment = $("#commentData").val();
             var coordinates = currentFileCoordinates || {};
             var data = {
                 'fileId' :          currentFileId,
@@ -794,6 +803,7 @@
                 'annotationsOrder': annotationsOrder,
                 'labelCount' :     {{labelCount}},
                 'userId'    : "{{userId}}",
+                'comment': comment,
                 'hasToIncreaseCurrent': 1,
                 "coordinates": coordinates,
             };
