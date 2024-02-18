@@ -21,3 +21,4 @@ xlrd
 xlwt
 matplotlib
 email_validator
+numpy
