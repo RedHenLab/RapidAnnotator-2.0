@@ -324,6 +324,16 @@
         var doneButton = $('.doneButton');
         var nextButton = $('.nextButton');
 
+	// Hiding nextButton if multichoice is not enabled  -------might need to come back for multiple levels
+        var currentLevel = 1;
+        var currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+        var multichoice = currentLevelBody.data("multichoice"); // Used for multichoice labels for the current level
+        if (multichoice == "True"){
+            nextButton.removeClass('hidden-element');
+        } else {
+            nextButton.addClass('hidden-element');
+        }
+	    
         var file = $('.file');
         loopingButton = $('.toggleLooping');
 
@@ -735,19 +745,26 @@
         /*show only first level*/
         $(".annotationLevel[data-index=1]").removeClass('hidden-element');
 
-        labelButton.on('click', function() {
-            updateSelectedLabel($(this));
-            if("{{experiment.displayTargetCaption}}" == "True"){
-                var targetCaption = $("#targetCaptionData").val();
-                var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
-                save_targetCaption(currentFileId, targetCaption);
+        //labelButton.on('click', function() {
+            //updateSelectedLabel($(this));
+            //if("{{experiment.displayTargetCaption}}" == "True"){
+                //var targetCaption = $("#targetCaptionData").val();
+                //var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
+                //save_targetCaption(currentFileId, targetCaption);
 
-                var commentData = $("#commentsData").val();
-                save_comment(currentFileId, commentData);
-            }
-        });
-        
-        
+                //var commentData = $("#commentsData").val();
+                //save_comment(currentFileId, commentData);
+            //}
+        //});
+
+	if (multichoice == "True"){
+            labelButton.on('click',preNextLevelHandler)
+        } else {
+            labelButton.on('click', function(){
+                preNextLevelHandler.call(this);
+                nextLevelHandler.call(this);
+            });
+        }
 
         $(document).keyup(function(event) {
             if(event.target.nodeName == "TEXTAREA" || event.target.nodeName == "INPUT" ){
@@ -909,8 +926,13 @@
         }
 
         function nextLevelHandler(){
+	    var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
+            var commentData = $("#commentsData").val();
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
             levelId = currentLevelBody.data("levelid");
+	    console.log(commentData)        
+            console.log(levelId)        
+            save_comment(currentFileId, commentData, levelId);
             if ("{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
                 currentFileCoordinates[levelId] = {"start":startTime, "end":endTime}
             }
@@ -1338,6 +1360,8 @@
         var data = {
             'fileId' : fileId,
             'comment': comment,
+	    'annotationLevel_id': levelId,                 
+            'experiment_id': "{{experiment.id}}"
         };
         $.ajax({
             url: url,
