@@ -167,6 +167,17 @@
                                      {%- endif -%}
                                     <br>
                              </td>
+                             </td>
+                             <td style="padding-left: {{padLeft}}%">                   
+                                {%- if comments[file.id][level.id] -%}
+                                    {% for comment in comments[file.id][level.id] %}
+                                       <div>{{comment}}</div>
+                                    {% endfor %}
+                                {%- else -%}
+                                    {{(' ')}}
+                                 {%- endif -%}
+                                <br>
+                             </td>
                          {% endfor %}
                         <!-- <td>
                             <button class="deleteAnnotationButton pull-right close" type="button"
