@@ -790,6 +790,13 @@ class AnnotationCommentInfo(db.Model):
     '''
     comment = db.Column(db.String(2500), nullable=False, server_default='')
 
+    '''the level for which the comment is made.'''
+    annotationLevel_id = db.Column(Integer, db.ForeignKey(
+        'AnnotationLevel.id', ondelete='CASCADE')
+    )
+
+    '''the experiment on which the comment is made.'''
+    experiment_id = db.Column(Integer, db.ForeignKey('Experiment.id', ondelete='CASCADE'))
 
     def __str__(self):
         """Representation."""
