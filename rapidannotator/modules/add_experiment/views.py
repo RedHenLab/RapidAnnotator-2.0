@@ -52,7 +52,7 @@ def index(experimentId):
     for fl in expFiles:
         fileCaption = FileCaption.query.filter_by(file_id=fl.id).first()
         exp_files.append((fl, fileCaption))
-    total = ceil(File.query.filter_by(experiment_id=experiment.id).count() / per_page)
+    total = ceil(File.query.filter_by(experiment_id=experiment.id).count())
 
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap3')
 
@@ -208,6 +208,7 @@ def _addAnnotator():
     experimentAnnotator = AnnotatorAssociation()
     experimentAnnotator.experiment = experiment
     experimentAnnotator.annotator = user
+    db.session.add(experimentAnnotator)
     db.session.commit()
     annotatorsPlot = _annotatorsPlot(experiment)
     response = {
@@ -1189,7 +1190,7 @@ def viewResults(experimentId, userId):
     annotators = [assoc.annotator for assoc in annotators_assoc]
 
     
-    total = ceil(File.query.filter_by(experiment_id=experiment.id).count() / per_page)
+    total = ceil(File.query.filter_by(experiment_id=experiment.id).count())
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap3')
 
     annotations = {}
@@ -1236,11 +1237,16 @@ def _discardAnnotations():
     '''
     for level in annotationLevels:
         AnnotationInfo.query.filter_by(annotationLevel_id=level.id).delete()
+        AnnotationCommentInfo.query.filter_by(annotationLevel_id=level.id).delete()
 
     annotatorsInfo = AnnotatorAssociation.query.filter_by(experiment_id=experimentId).all()
     for annotatorInfo in annotatorsInfo:
         annotatorInfo.current = 0
 
+    commentInfo = AnnotationCommentInfo.query.filter_by(experiment_id=experimentId).all()
+    for comm in commentInfo:
+        comm.current = 0
+    
     db.session.commit()
     response = {}
     response['success'] = True
