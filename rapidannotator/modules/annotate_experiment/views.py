@@ -346,9 +346,23 @@ def _addAnnotationInfo():
     userId = int(arguments.get('userId', None))
     hasToIncreaseCurrent = int(arguments.get('hasToIncreaseCurrent', None))
     coordinates = arguments.get('coordinates')
+    comment = arguments.get('comment')
+    
     if coordinates == None:
         coordinates = {}
-    
+
+    if comment is not None:
+        commentInfo = AnnotationCommentInfo.query.filter_by(user_id=current_user.id, file_id=fileId).first()
+        if commentInfo is not None:
+            AnnotationCommentInfo.query.filter(and_(AnnotationCommentInfo.user_id==userId, AnnotationCommentInfo.file_id==fileId)).delete()
+            db.session.commit()
+        commentInfo = AnnotationCommentInfo(
+            file_id = fileId,
+            user_id = userId,
+            comment = comment
+        )
+        db.session.add(commentInfo)
+
     # targetCaptionData = arguments.get('targetCaptionData', None)
 
     ''' For displaying a warning if the labels got changed at any time'''
@@ -546,7 +560,10 @@ def specificAnnotation(userId, experimentId, fileId):
         annotationAlreadyDone[info.annotationLevel_id].append([info.label_id, label.name, info.label_other, info.coordinates or []])
 
     isExpowner =  int((current_user in  experiment.owners))
-
+    commentInfo = AnnotationCommentInfo.query.filter_by(user_id=current_user.id, file_id=fileId).first()
+    comment = ""
+    if commentInfo is not None:
+        comment = commentInfo.comment
     return render_template('annotate_experiment/specific.html',
         experiment = experiment,
         currentFile = currentFile,
@@ -558,5 +575,6 @@ def specificAnnotation(userId, experimentId, fileId):
         userId = userId,
         annotationAlreadyDone = annotationAlreadyDone,
         displayAlreadyAnnotated = displayAlreadyAnnotated,
+        comment=comment,
     )
 
